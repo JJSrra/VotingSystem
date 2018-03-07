@@ -19,6 +19,10 @@ contract VotingSystem{
         uint votes;
     }
 
+    // Event that reflects the winner of the voting, and the amount
+    // of votes it has received
+    event IsWinner(bytes32 name, uint votes);
+
     // Variables that will store all voters and candidates
     mapping (address => Voter) public voters;
     Candidate[] public candidates;
@@ -26,12 +30,16 @@ contract VotingSystem{
     // Address that identifies the owner of the voting
     address public owner;
 
+    // Flag that allows to know if voting is still available
+    bool public isOpen;
+
     // Constructor function, that receives an array with the name
     // of each candidate, and creates every necessary slot in "candidates" array
     // NOTE: The user that creates the voting becomes the owner of the voting,
     // thus, the only one able to close it
     function VotingSystem (bytes32[] candidatesNames) public {
         owner = msg.sender;
+        isOpen = true;
         for (uint i=0; i < candidatesNames.length; ++i){
             // The candidate is included in the array
             candidates.push(Candidate({
@@ -43,7 +51,10 @@ contract VotingSystem{
 
     // Voting function, can only be called once per voter
     function Vote (uint candidateVote) public {
-        // First the currentVoter has to be located, and it is mandatory
+        // The first requirement is that the voting has to be open
+        require(isOpen);
+
+        // Then the currentVoter has to be located, and it is mandatory
         // to check if they have already voted
         Voter storage currentVoter = voters[msg.sender];
         require(!currentVoter.alreadyVoted);
@@ -55,6 +66,26 @@ contract VotingSystem{
 
         // And of course, the vote is added to the candidate's count
         candidates[candidateVote].votes++;
+    }
 
+    // Voting closing function, can only be called by the owner, and automatically sets the
+    // isOpen flag to false
+    function CloseVoting () public {
+        require((msg.sender == owner) && isOpen);
+        isOpen = false;
+    }
+
+    // A function able to count votes and announce which candidate is the winner
+    function GetWinner () public {
+        require(!isOpen);
+        uint maxAmountOfVotes = 0;
+        uint winnerCandidate = 0;
+        for (uint i=0; i < candidates.length; ++i){
+            if (candidates[i].votes > maxAmountOfVotes){
+                maxAmountOfVotes = candidates[i].votes;
+                winnerCandidate = i;
+            }
+        }
+        IsWinner(candidates[winnerCandidate].name, candidates[winnerCandidate].votes);
     }
 }
