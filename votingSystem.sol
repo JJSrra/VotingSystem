@@ -19,10 +19,6 @@ contract VotingSystem{
         uint votes;
     }
 
-    // Event that reflects the winner of the voting, and the amount
-    // of votes it has received
-    event IsWinner(bytes32 name, uint votes);
-
     // Variables that will store all voters and candidates
     mapping (address => Voter) public voters;
     Candidate[] public candidates;
@@ -76,7 +72,7 @@ contract VotingSystem{
     }
 
     // A function able to count votes and announce which candidate is the winner
-    function GetWinner () public {
+    function GetWinner () constant returns (bytes32){
         require(!isOpen);
         uint maxAmountOfVotes = 0;
         uint winnerCandidate = 0;
@@ -86,6 +82,6 @@ contract VotingSystem{
                 winnerCandidate = i;
             }
         }
-        IsWinner(candidates[winnerCandidate].name, candidates[winnerCandidate].votes);
+        return candidates[winnerCandidate].name;
     }
 }
