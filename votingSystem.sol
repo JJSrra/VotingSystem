@@ -39,13 +39,13 @@ contract VotingSystem{
     function Vote (uint partyVote) public {
         // First the currentVoter has to be located, and it is mandatory
         // to check if they have already voted
-        //Voter storage currentVoter = voters[msg.sender];
-        require(!voters[msg.sender].alreadyVoted);
+        Voter storage currentVoter = voters[msg.sender];
+        require(!currentVoter.alreadyVoted);
 
         // If they have not already voted, the flag is switched to true,
         // and then the vote is registered
-        voters[msg.sender].vote = partyVote;
-        voters[msg.sender].alreadyVoted = true;
+        currentVoter.vote = partyVote;
+        currentVoter.alreadyVoted = true;
 
         // And of course, the vote is added to the party's count
         parties[partyVote].votes++;
